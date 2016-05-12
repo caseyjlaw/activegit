@@ -8,5 +8,5 @@ setup(
     version = '0.1',
     url = 'http://github.com/caseyjlaw/activegit',
     packages = find_packages(),        # get all python scripts in real time
-    install_requires=['sh'],
+    install_requires=['sh', 'scikit-learn'],
 )
