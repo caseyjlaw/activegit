@@ -84,7 +84,7 @@ class ActiveGit():
         return all([sf in gcontents for sf in std_files]) and all([sf in fcontents for sf in std_files])
         
 
-    def set_version(self, version, force=False):
+    def set_version(self, version, force=True):
         if version in self.versions:
             self._version = version
             if 'working' in self.repo.branch().stdout:
