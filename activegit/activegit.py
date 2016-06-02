@@ -29,30 +29,25 @@ class ActiveGit():
         self.repopath = repopath
 
         if os.path.exists(repopath):
-            try:
-                contents = [gf.rstrip('\n') for gf in self.repo.bake('ls-files')()]
-                if all([sf in contents for sf in std_files]):
-                    logger.info('ActiveGit initializing from repo at {0}'.format(repopath))
-                    logger.info('Available versions: {0}'.format(','.join(self.versions)))
-                    if 'working' in self.repo.branch().stdout:
-                        logger.info('Found working branch on initialization. Removing...')
-                        cmd = self.repo.checkout('master')
-                        cmd = self.repo.branch('working', d=True)
-                    self.set_version(self.repo.describe(abbrev=0, tags=True).stdout.rstrip('\n'))
-                else:
-                    logger.info('{0} does not include standard set of files {1}'.format(repopath, std_files))
-            except:
-#                contents = os.listdir(repopath)
-#                if all([sf in contents for sf in std_files]):
-                logger.info('Uninitialized repo found at {0}. Initializing...'.format(repopath))
-                self.initializerepo()
+            contents = [gf.rstrip('\n') for gf in self.repo.bake('ls-files')()]
+            if all([sf in contents for sf in std_files]):
+                logger.info('ActiveGit initializing from repo at {0}'.format(repopath))
+                logger.info('Available versions: {0}'.format(','.join(self.versions)))
+                if 'working' in self.repo.branch().stdout:
+                    logger.info('Found working branch on initialization. Removing...')
+                    cmd = self.repo.checkout('master')
+                    cmd = self.repo.branch('working', d=True)
+                self.set_version(self.repo.describe(abbrev=0, tags=True).stdout.rstrip('\n'))
+            else:
+                logger.info('{0} does not include standard set of files {1}'.format(repopath, std_files))
         else:
-            logger.info('No repo or directory found at {0}'.format(repopath))
-
+            logger.info('Creating repo at {0}'.format(repopath))
+            self.initializerepo()
 
     def initializerepo(self):
         """ Fill empty directory with products and make first commit """
 
+        os.mkdir(self.repopath)
         cmd = self.repo.init()
 
         self.write_testing_data([], [])
@@ -183,11 +178,12 @@ class ActiveGit():
             msg += 'Testing set has {0} examples.'.format(len(feat))
 
         cmd = self.repo.commit(m=msg, a=True)
+        cmd = self.repo.tag(version)
         cmd = self.repo.checkout('master')
         self.update()
         cmd = self.repo.merge('working')
         cmd = self.repo.branch('working', d=True)
-        cmd = self.repo.tag(version)
+        self.set_version(version)
 
         try:
             stdout = self.repo.push('origin', 'master', '--tags').stdout
