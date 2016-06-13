@@ -29,17 +29,19 @@ class ActiveGit():
         self.repopath = repopath
 
         if os.path.exists(repopath):
-            contents = [gf.rstrip('\n') for gf in self.repo.bake('ls-files')()]
-            if all([sf in contents for sf in std_files]):
-                logger.info('ActiveGit initializing from repo at {0}'.format(repopath))
-                logger.info('Available versions: {0}'.format(','.join(self.versions)))
-                if 'working' in self.repo.branch().stdout:
-                    logger.info('Found working branch on initialization. Removing...')
-                    cmd = self.repo.checkout('master')
-                    cmd = self.repo.branch('working', d=True)
-                self.set_version(self.repo.describe(abbrev=0, tags=True).stdout.rstrip('\n'))
-            else:
-                logger.info('{0} does not include standard set of files {1}'.format(repopath, std_files))
+            try:
+                contents = [gf.rstrip('\n') for gf in self.repo.bake('ls-files')()]
+                if all([sf in contents for sf in std_files]):
+                    logger.info('ActiveGit initializing from repo at {0}'.format(repopath))
+                    logger.info('Available versions: {0}'.format(','.join(self.versions)))
+                    if 'working' in self.repo.branch().stdout:
+                        logger.info('Found working branch on initialization. Removing...')
+                        cmd = self.repo.checkout('master')
+                        cmd = self.repo.branch('working', d=True)
+                    self.set_version(self.repo.describe(abbrev=0, tags=True).stdout.rstrip('\n'))
+            except:
+                logger.info('{0} does not include standard set of files {1}. Initializing...'.format(repopath, std_files))
+                self.initializerepo()
         else:
             logger.info('Creating repo at {0}'.format(repopath))
             self.initializerepo()
@@ -47,7 +49,11 @@ class ActiveGit():
     def initializerepo(self):
         """ Fill empty directory with products and make first commit """
 
-        os.mkdir(self.repopath)
+        try:
+            os.mkdir(self.repopath)
+        except OSError:
+            pass
+
         cmd = self.repo.init()
 
         self.write_testing_data([], [])
