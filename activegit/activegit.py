@@ -22,15 +22,17 @@ class ActiveGit():
     Branch 'master' keeps latest and branch 'working' is used for active session.
     """
 
-    def __init__(self, repopath):
+    def __init__(self, repopath, bare=False, shared='group'):
         """ Set up activegit for repo at repopath. Checks out master branch (lastest commit) by default. """
 
         self.repo = git.bake(_cwd=repopath)
         self.repopath = repopath
+        self.bare = bare
+        self.shared = shared
 
         if os.path.exists(repopath):
             try:
-                contents = [gf.rstrip('\n') for gf in self.repo.bake('ls-files')()]
+                contents = [gf.rstrip('\n') for gf in self.repo('ls-files')()]
                 if all([sf in contents for sf in std_files]):
                     logger.info('ActiveGit initializing from repo at {0}'.format(repopath))
                     logger.info('Available versions: {0}'.format(','.join(self.versions)))
@@ -39,8 +41,10 @@ class ActiveGit():
                         cmd = self.repo.checkout('master')
                         cmd = self.repo.branch('working', d=True)
                     self.set_version(self.repo.describe(abbrev=0, tags=True).stdout.rstrip('\n'))
+                else:
+                    raise
             except:
-                logger.info('{0} does not include standard set of files {1}. Initializing...'.format(repopath, std_files))
+                logger.warn('{0} does not include standard set of files {1}. Initializing...'.format(repopath, std_files))
                 self.initializerepo()
         else:
             logger.info('Creating repo at {0}'.format(repopath))
@@ -54,19 +58,20 @@ class ActiveGit():
         except OSError:
             pass
 
-        cmd = self.repo.init()
+        cmd = self.repo.init(bare=self.bare, shared=self.shared)
 
-        self.write_testing_data([], [])
-        self.write_training_data([], [])
-        self.write_classifier(None)
+        if not self.bare:
+            self.write_testing_data([], [])
+            self.write_training_data([], [])
+            self.write_classifier(None)
 
-        cmd = self.repo.add('training.pkl')
-        cmd = self.repo.add('testing.pkl')
-        cmd = self.repo.add('classifier.pkl')
+            cmd = self.repo.add('training.pkl')
+            cmd = self.repo.add('testing.pkl')
+            cmd = self.repo.add('classifier.pkl')
 
-        cmd = self.repo.commit(m='initial commit')
-        cmd = self.repo.tag('initial')
-        cmd = self.set_version('initial')
+            cmd = self.repo.commit(m='initial commit')
+            cmd = self.repo.tag('initial')
+            cmd = self.set_version('initial')
 
 
     # version/tag management
@@ -85,7 +90,7 @@ class ActiveGit():
 
     @property
     def isvalid(self):
-        gcontents = [gf.rstrip('\n') for gf in self.repo.bake('ls-files')()]
+        gcontents = [gf.rstrip('\n') for gf in self.repo('ls-files')()]
         fcontents = os.listdir(self.repopath)
         return all([sf in gcontents for sf in std_files]) and all([sf in fcontents for sf in std_files])
         
