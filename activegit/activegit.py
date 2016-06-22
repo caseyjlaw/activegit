@@ -32,14 +32,14 @@ class ActiveGit():
 
         if os.path.exists(repopath):
             try:
-                contents = [gf.rstrip('\n') for gf in self.repo('ls-files')()]
+                contents = [gf.rstrip('\n') for gf in self.repo.bake('ls-files')()]
                 if all([sf in contents for sf in std_files]):
                     logger.info('ActiveGit initializing from repo at {0}'.format(repopath))
                     logger.info('Available versions: {0}'.format(','.join(self.versions)))
                     if 'working' in self.repo.branch().stdout:
                         logger.info('Found working branch on initialization. Removing...')
                         cmd = self.repo.checkout('master')
-                        cmd = self.repo.branch('working', d=True)
+                        cmd = self.repo.branch('working', D=True)
                     self.set_version(self.repo.describe(abbrev=0, tags=True).stdout.rstrip('\n'))
                 else:
                     raise
@@ -90,7 +90,7 @@ class ActiveGit():
 
     @property
     def isvalid(self):
-        gcontents = [gf.rstrip('\n') for gf in self.repo('ls-files')()]
+        gcontents = [gf.rstrip('\n') for gf in self.repo.bake('ls-files')()]
         fcontents = os.listdir(self.repopath)
         return all([sf in gcontents for sf in std_files]) and all([sf in fcontents for sf in std_files])
         
