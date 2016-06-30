@@ -4,6 +4,9 @@ python:
 install:
   - python setup.py install
   - pip install codecov pytest-cov
+before_script:
+  - git config --global user.email "caseyjlaw@gmail.com"
+  - git config --global user.name "Travis-CI"
 script: py.test --cov=./
 after_success:
   codecov
