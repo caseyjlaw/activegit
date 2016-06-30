@@ -7,3 +7,6 @@ install:
 script: py.test --cov=./
 after_success:
   codecov
+notifications:
+  email: false
+  slack: realfastvla:oIyoiLcRdeYEif8kh7tANDKC
