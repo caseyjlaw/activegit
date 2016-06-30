@@ -1,5 +1,8 @@
+
 # activegit
 Using git repos for distributed for active learning
+
+[![Build Status](https://travis-ci.org/caseyjlaw/activegit.svg?branch=master)](https://travis-ci.org/caseyjlaw/activegit)
 
 # Usage
     ag = activegit.ActiveGit(repopath)
