@@ -2,7 +2,7 @@
 # activegit
 Using git repos for distributed for active learning
 
-[![Build Status](https://travis-ci.org/caseyjlaw/activegit.svg?branch=master)](https://travis-ci.org/caseyjlaw/activegit)
+[![Build Status](https://travis-ci.org/caseyjlaw/activegit.svg?branch=master)](https://travis-ci.org/caseyjlaw/activegit) [![codecov](https://codecov.io/gh/caseyjlaw/activegit/branch/master/graph/badge.svg)](https://codecov.io/gh/caseyjlaw/activegit)
 
 # Usage
     ag = activegit.ActiveGit(repopath)
