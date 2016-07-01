@@ -1,5 +1,5 @@
-import activegit
 import pytest
+import activegit
 
 def test_nocreation():
     with pytest.raises(TypeError):
