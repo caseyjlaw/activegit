@@ -10,7 +10,8 @@ before_script:
 script: py.test
 after_success:
   - coverage run --source activegit -m py.test
-  - codecov xml
+  - coverage xml
+  - codecov
 notifications:
   email: false
   slack: realfastvla:oIyoiLcRdeYEif8kh7tANDKC
