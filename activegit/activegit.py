@@ -10,16 +10,17 @@ std_files = ['classifier.pkl', 'testing.pkl', 'training.pkl']
 
 
 class ActiveGit():
-    """ Use tags to identify versions of an active learning loop and classifier.
+    """ Uses a git repo to keep track of active learning data and classifier.
 
-    Assumes that repo has 'training.pkl', 'testing.pkl', and 'classifier.pkl'.
-    First two contain single dictionary with features as keys and target (0/1) as values.
-    The third object is the sklearn random forest object.
+    The standard set of files is: 'training.pkl', 'testing.pkl', and 'classifier.pkl'.
+    First two each contain a dictionary with features as keys and target labels (e.g., 0/1) as values.
+    The third file contains the classifier (e.g., from sklearn).
 
-    A version can be any string (such as used in rbversion), but can also be based on name of expert doing classification.
-
-    Tags are central to tracking classifier and data. 
+    Tags are central to tracking classifier and data. A new repo starts with empty files and a tag "initial".
     Branch 'master' keeps latest and branch 'working' is used for active session.
+    After committing a new version, the working is merged to master, deleted, and a new working branch checked out.
+
+    Setting bare=True creates a bare git repo that can be shared (cloned) by a group locally or via git daemon sharing.
     """
 
     def __init__(self, repopath, bare=False, shared='group'):
@@ -77,6 +78,8 @@ class ActiveGit():
     # version/tag management
     @property
     def version(self):
+        """ Current version checked out. """
+
         if hasattr(self, '_version'):
             return self._version
         else:
@@ -85,17 +88,23 @@ class ActiveGit():
 
     @property
     def versions(self):
+        """ Sorted list of versions committed thus far. """
+
         return sorted(self.repo.tag().stdout.rstrip('\n').split('\n'))
 
 
     @property
     def isvalid(self):
+        """ Checks whether contents of repo are consistent with standard set. """
+
         gcontents = [gf.rstrip('\n') for gf in self.repo.bake('ls-files')()]
         fcontents = os.listdir(self.repopath)
         return all([sf in gcontents for sf in std_files]) and all([sf in fcontents for sf in std_files])
         
 
     def set_version(self, version, force=True):
+        """ Sets the version name for the current state of repo """
+
         if version in self.versions:
             self._version = version
             if 'working' in self.repo.branch().stdout:
@@ -114,6 +123,8 @@ class ActiveGit():
 
 
     def show_version_info(self, version):
+        """ Summarizes info of a particular version (a la "git show version") """
+
         if version in self.versions:
             stdout = self.repo.show(version, '--summary').stdout
             logger.info(stdout)
@@ -124,7 +135,7 @@ class ActiveGit():
     # data and classifier as properties
     @property
     def training_data(self):
-        """ Read data dictionary from training.pkl """
+        """ Returns data dictionary from training.pkl """
 
         data = pickle.load(open(os.path.join(self.repopath, 'training.pkl')))
         return data.keys(), data.values()
@@ -132,7 +143,7 @@ class ActiveGit():
 
     @property
     def testing_data(self):
-        """ Read data dictionary from testing.pkl """
+        """ Returns data dictionary from testing.pkl """
 
         data = pickle.load(open(os.path.join(self.repopath, 'testing.pkl')))
         return data.keys(), data.values()
@@ -140,7 +151,7 @@ class ActiveGit():
 
     @property
     def classifier(self):
-        """ Load classifier from classifier.pkl """        
+        """ Returns classifier from classifier.pkl """        
 
         clf = pickle.load(open(os.path.join(self.repopath, 'classifier.pkl')))
         return clf
@@ -148,7 +159,7 @@ class ActiveGit():
 
     # methods to update data/classifier
     def write_training_data(self, features, targets):
-        """ Write data dictionary to filename """
+        """ Writes data dictionary to filename """
 
         assert len(features) == len(targets)
 
@@ -159,7 +170,7 @@ class ActiveGit():
 
 
     def write_testing_data(self, features, targets):
-        """ Write data dictionary to filename """
+        """ Writes data dictionary to filename """
 
         assert len(features) == len(targets)
 
@@ -170,7 +181,7 @@ class ActiveGit():
 
 
     def write_classifier(self, clf):
-        """ Write classifier object to pickle file """
+        """ Writes classifier object to pickle file """
 
         with open(os.path.join(self.repopath, 'classifier.pkl'), 'w') as fp:
             pickle.dump(clf, fp)
@@ -204,7 +215,7 @@ class ActiveGit():
 
 
     def update(self):
-        """ Pull latest versions/tags, if linked to github. """
+        """ Pull latest versions/tags, if linked to a remote (e.g., github). """
 
         try:
             stdout = self.repo.pull().stdout
