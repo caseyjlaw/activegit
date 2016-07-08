@@ -119,7 +119,7 @@ class ActiveGit():
             stdout = self.repo.checkout(version, b='working').stdout  # active version set in 'working' branch
             logger.info('Version {0} set'.format(version))
         else:
-            logger.info('Version {0} not found'.format(version))
+            raise AttributeError('Version {0} not found'.format(version))
 
 
     def show_version_info(self, version):
