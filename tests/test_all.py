@@ -73,17 +73,14 @@ class TestClass_write:
     def test_write1(self, tmpdir):
         agdir = str(tmpdir.mkdir('tmp').realpath())
         ag = activegit.ActiveGit(agdir)
-        features = [(1,2)]
-        targets = [[0]]
-        testingd = dict(zip(features, targets))
-        ag.write_testing_data(testingd)
-
-        features = [(3,4)]
-        targets = [[1]]
-        testingd = dict(zip(features, targets))
-        ag.write_training_data(trainingd)
+        features0 = [(1,2)]
+        targets0 = [[0]]
+        ag.write_testing_data(features, targets)
+        features1 = [(3,4),]
+        targets1 = [[1]]
+        ag.write_training_data(features, targets)
 
         testingd0 = ag.testing_data
         trainingd0 = ag.training_data
-        assert testingd == testingd0
-        assert trainingd == trainingd0
+        assert trainingd0 = [features0, targets0]
+        assert testingd0 = [features1, targets1]
