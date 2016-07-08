@@ -75,12 +75,14 @@ class TestClass_write:
         ag = activegit.ActiveGit(agdir)
         features0 = [(1,2)]
         targets0 = [[0]]
-        ag.write_testing_data(features, targets)
-        features1 = [(3,4),]
+        ag.write_testing_data(features0, targets0)
+        features1 = [(3,4)]
         targets1 = [[1]]
-        ag.write_training_data(features, targets)
+        ag.write_training_data(features1, targets1)
 
-        testingd0 = ag.testing_data
-        trainingd0 = ag.training_data
-        assert trainingd0 == [features0, targets0]
-        assert testingd0 == [features1, targets1]
+        features2, targets2 = ag.testing_data
+        features3, targets3 = ag.training_data
+        assert features0 == features2
+        assert features1 == features3
+        assert targets0 == targets2
+        assert targets1 == targets3
