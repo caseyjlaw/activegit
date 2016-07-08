@@ -82,5 +82,5 @@ class TestClass_write:
 
         testingd0 = ag.testing_data
         trainingd0 = ag.training_data
-        assert trainingd0 = [features0, targets0]
-        assert testingd0 = [features1, targets1]
+        assert trainingd0 == [features0, targets0]
+        assert testingd0 == [features1, targets1]
